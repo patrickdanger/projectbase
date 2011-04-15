@@ -1,0 +1,12 @@
+#!/usr/bin/env coffee
+
+http		= require 'http'
+
+http.createServer (req, resp) ->
+	resp.writeHead 	200, 'Content-Type': 'text/plain'
+	resp.end		'Hello, World!'
+
+.listen 8080
+console.log """
+			Server started at port 8080
+			"""
