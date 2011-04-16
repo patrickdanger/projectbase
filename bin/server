@@ -1,12 +1,49 @@
 #!/usr/bin/env coffee
 
-http		= require 'http'
+# simple file http file server for nodejs, included in the
+# base_baseproject_jade_stylus_coffeescript for quick debug
+# @author: 	patrick@exquisitedanger.com
+# @version:	0.1
 
-http.createServer (req, resp) ->
-	resp.writeHead 	200, 'Content-Type': 'text/plain'
-	resp.end		'Hello, World!'
+http 	= require 'http'
+fs		= require 'fs'
+url		= require 'url'
+path	= require 'path'
 
+httpserver = http.createServer (req, resp) ->
+	
+	reqUrl			= url.parse req.url, yes
+	rscPath			= path.normalize path.join webroot ? 'webroot', reqUrl.pathname
+	
+	path.exists rscPath, (exists) ->
+		if not exists
+			resp.writeHead 404, 'Content-type': 'text/plain'
+			resp.end '404 Not Found'
+			return
+		fs.readFile rscPath, 'binary', (err, data) ->
+			if err
+				resp.writeHead 500, 'Content-type': 'text/plain'
+				resp.end "#{err}"
+				return
+			resp.writeHead 200
+			resp.write data, 'binary'
+			resp.end()
+			return
+	
+	console.log 	"""
+					receiving request:
+					
+					method:		#{req.method}
+					raw url:	#{req.url}
+					url:		#{JSON.stringify reqUrl}
+					headers:	#{JSON.stringify req.headers}
+
+					path:		#{rscPath}
+					directory:	#{path.dirname rscPath}
+					base:		#{path.basename rscPath}
+					extension:	#{path.extname rscPath}
+					
+					""" unless reqUrl.href is '/favicon.ico'
+	
 .listen 8080
-console.log """
-			Server started at port 8080
-			"""
+console.log "Server started at http://localhost:8080/"
