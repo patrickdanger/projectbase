@@ -13,23 +13,12 @@ path	= require 'path'
 httpserver = http.createServer (req, resp) ->
 	
 	reqUrl			= url.parse req.url, yes
-	rscPath			= path.normalize path.join webroot ? 'webroot', reqUrl.pathname
+	query			= reqUrl.queryString
+	file			= new File path.normalize path.join webroot ? 'webroot', reqUrl.pathname
+	servicer		= new RequestServicer file, resp
 	
-	path.exists rscPath, (exists) ->
-		if not exists
-			resp.writeHead 404, 'Content-type': 'text/plain'
-			resp.end '404 Not Found'
-			return
-		fs.readFile rscPath, 'binary', (err, data) ->
-			if err
-				resp.writeHead 500, 'Content-type': 'text/plain'
-				resp.end "#{err}"
-				return
-			resp.writeHead 200
-			resp.write data, 'binary'
-			resp.end()
-			return
-	
+	servicer.service()
+
 	console.log 	"""
 					receiving request:
 					
@@ -38,12 +27,66 @@ httpserver = http.createServer (req, resp) ->
 					url:		#{JSON.stringify reqUrl}
 					headers:	#{JSON.stringify req.headers}
 
-					path:		#{rscPath}
-					directory:	#{path.dirname rscPath}
-					base:		#{path.basename rscPath}
-					extension:	#{path.extname rscPath}
+					path:		#{file.filepath}
+					directory:	#{file.directory}
+					filename:	#{file.filename}
+					extension:	#{file.extension}
+					filetype:	#{file.type}
 					
 					""" unless reqUrl.href is '/favicon.ico'
 	
 .listen 8080
 console.log "Server started at http://localhost:8080/"
+
+
+#
+# 	File
+#	object encapsulating the RequestServicer notion of a file
+#	that can be served.
+#	
+#	@parm	filepath		the full, resolved path to the file this
+#							object represents.
+#
+class File 
+	constructor: (filepath) ->
+		@path 		= filepath
+		@directory	= path.dirname @filepath
+		@filename 	= path.basename filepath
+		@extension 	= path.extname filepath
+		@type		= @extension.substr 1, @extension.length	
+
+exports.File 			= File
+
+#
+#	RequestServicer
+#	an object designed to encapsulate a file and service on call
+#	to RequestServicer.service()
+#
+#	@parm	file			File object
+#	@parm	resp			Http.Response object
+#
+class RequestServicer
+	constructor: (file, resp) ->
+		@file		= file
+		@response	= resp
+		
+	service: () ->
+		filepath	= @file.path
+		resp		= @response
+		
+		path.exists filepath, (exists) ->
+			if not exists
+				resp.writeHead 404, 'Content-type': 'text/plain'
+				resp.end '404 Not Found'
+				return
+			fs.readFile filepath, 'binary', (err, data) ->
+				if err
+					resp.writeHead 500, 'Content-type': 'text/plain'
+					resp.end "#{err}"
+					return
+				resp.writeHead 200
+				resp.write data, 'binary'
+				resp.end()
+				return
+				
+exports.RequestServicer	= RequestServicer
