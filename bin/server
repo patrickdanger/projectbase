@@ -1,92 +1,82 @@
 #!/usr/bin/env coffee
 
-# simple file http file server for nodejs, included in the
-# base_baseproject_jade_stylus_coffeescript for quick debug
-# @author: 	patrick@exquisitedanger.com
-# @version:	0.1
-
-http 	= require 'http'
-fs		= require 'fs'
+http	= require 'http'
 url		= require 'url'
-path	= require 'path'
+fs 		= require 'fs'
+path 	= require 'path'
 
-httpserver = http.createServer (req, resp) ->
+jade	= require 'jade'
+stylus	= require 'stylus'
+coffee 	= require 'coffee-script'
+
+server 	= http.createServer (req, resp) ->
+
+	uri 		= url.parse req.url, yes
+	query 		= uri.queryString
+	filepath	= path.normalize uri.pathname
 	
-	reqUrl			= url.parse req.url, yes
-	query			= reqUrl.queryString
-	file			= new File path.normalize path.join webroot ? 'webroot', reqUrl.pathname
-	servicer		= new RequestServicer file, resp
-	
-	servicer.service()
-
-	console.log 	"""
-					receiving request:
-					
-					method:		#{req.method}
-					raw url:	#{req.url}
-					url:		#{JSON.stringify reqUrl}
-					headers:	#{JSON.stringify req.headers}
-
-					path:		#{file.filepath}
-					directory:	#{file.directory}
-					filename:	#{file.filename}
-					extension:	#{file.extension}
-					filetype:	#{file.type}
-					
-					""" unless reqUrl.href is '/favicon.ico'
-	
-.listen 8080
-console.log "Server started at http://localhost:8080/"
-
-
-#
-# 	File
-#	object encapsulating the RequestServicer notion of a file
-#	that can be served.
-#	
-#	@parm	filepath		the full, resolved path to the file this
-#							object represents.
-#
-class File 
-	constructor: (filepath) ->
-		@path 		= filepath
-		@directory	= path.dirname @filepath
-		@filename 	= path.basename filepath
-		@extension 	= path.extname filepath
-		@type		= @extension.substr 1, @extension.length	
-
-exports.File 			= File
-
-#
-#	RequestServicer
-#	an object designed to encapsulate a file and service on call
-#	to RequestServicer.service()
-#
-#	@parm	file			File object
-#	@parm	resp			Http.Response object
-#
-class RequestServicer
-	constructor: (file, resp) ->
-		@file		= file
-		@response	= resp
-		
-	service: () ->
-		filepath	= @file.path
-		resp		= @response
-		
-		path.exists filepath, (exists) ->
-			if not exists
-				resp.writeHead 404, 'Content-type': 'text/plain'
-				resp.end '404 Not Found'
-				return
-			fs.readFile filepath, 'binary', (err, data) ->
-				if err
-					resp.writeHead 500, 'Content-type': 'text/plain'
-					resp.end "#{err}"
-					return
+	file		= factory.file filepath
+	path.exists file.filepath, (exists) ->
+		if exists
+			file.render (data) -> 
 				resp.writeHead 200
-				resp.write data, 'binary'
+				resp.write data
 				resp.end()
-				return
-				
-exports.RequestServicer	= RequestServicer
+		else
+			resp.writeHead 404
+			resp.end "404 File Not Found"
+			
+.listen 8080
+console.log "Server started, listening on port 8080"
+
+class FileFactory
+	constructor:	(webroot = "webroot", srcroot = "src") ->
+		@webroot = webroot
+		@srcroot = srcroot
+	file:			(filepath) ->
+		type = path.extname(filepath).substr 1, path.extname(filepath).length
+		switch type
+			when 'html' 	then new HtmlFile path.join(@webroot, filepath), type
+			when 'styl'		then new StylusFile path.join(@srcroot, 'stylus', filepath), type
+			when 'coffee'	then new CoffeeFile path.join(@srcroot, 'coffee', filepath), type
+			when 'jade'		then new JadeFile path.join(@srcroot, 'jade', filepath), type
+			else			new File path.join(@webroot, filepath), null 
+
+exports.FileFactory = FileFactory
+factory	= new FileFactory
+
+class File
+	constructor: 	(@filepath, @type) -> @name = path.basename @filepath
+	toString:		() ->
+	render: 		(buffer) ->
+		fs.readFile @filepath, (err, data) ->
+			if err then throw err
+			buffer data
+
+class HtmlFile extends File
+	render: 		(buffer) ->		fs.readFile @filepath, 'utf8', (err, data) ->
+										if err then return
+										buffer data
+
+class StylusFile extends File
+	render: 		(buffer) ->		fs.readFile @filepath, 'utf8', (err, data) ->
+										if err then throw err
+										stylus.render data, (err, css) ->
+											if err then return
+											buffer css
+
+class CoffeeFile extends File
+	render: 		(buffer) ->		fs.readFile @filepath, 'utf8', (err, data) ->
+										if err then return
+										buffer coffee.compile data
+
+class JadeFile extends HtmlFile
+	render: 		(buffer) ->		jade.renderFile @filepath, (err, html) ->
+										if err then return
+										buffer html 
+		
+exports.File 		= File
+exports.HtmlFile 	= HtmlFile
+exports.JadeFile	= JadeFile
+exports.StylusFile	= StylusFile
+exports.CoffeeFile	= CoffeeFile
