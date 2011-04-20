@@ -19,11 +19,13 @@ server 	= http.createServer (req, resp) ->
 
 	path.exists file.filepath, (exists) ->		 
 		if exists
+			console.log "serving file #{file}"
 			file.render (data) -> 
 				resp.writeHead 200
 				resp.write data
 				resp.end()
 		else
+			console.log "#{file} not found"
 			resp.writeHead 404
 			resp.end "404 File Not Found"
 			
@@ -48,7 +50,7 @@ factory	= new FileFactory
 
 class File
 	constructor: 	(@filepath, @type) -> @name = path.basename @filepath
-	toString:		() ->
+	toString:		() -> "#{@filepath}"
 	render: 		(buffer) ->
 		fs.readFile @filepath, (err, data) ->
 			if err then buffer "#{err}"
@@ -63,7 +65,7 @@ class StylusFile extends File
 	render: 		(buffer) ->		fs.readFile @filepath, 'utf8', (err, data) ->
 										if err then buffer "#{err}"
 										else 
-											stylus.render data, (err, css) ->
+											stylus(data).render (err, css) ->
 												if err then buffer "#{err}"
 												else buffer css
 
