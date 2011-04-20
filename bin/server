@@ -16,7 +16,8 @@ server 	= http.createServer (req, resp) ->
 	filepath	= path.normalize uri.pathname
 	
 	file		= factory.file filepath
-	path.exists file.filepath, (exists) ->
+
+	path.exists file.filepath, (exists) ->		 
 		if exists
 			file.render (data) -> 
 				resp.writeHead 200
@@ -50,30 +51,31 @@ class File
 	toString:		() ->
 	render: 		(buffer) ->
 		fs.readFile @filepath, (err, data) ->
-			if err then throw err
-			buffer data
+			if err then buffer "#{err}"
+			else buffer data
 
 class HtmlFile extends File
 	render: 		(buffer) ->		fs.readFile @filepath, 'utf8', (err, data) ->
-										if err then return
-										buffer data
+										if err then buffer "#{err}"
+										else buffer data
 
 class StylusFile extends File
 	render: 		(buffer) ->		fs.readFile @filepath, 'utf8', (err, data) ->
-										if err then throw err
-										stylus.render data, (err, css) ->
-											if err then return
-											buffer css
+										if err then buffer "#{err}"
+										else 
+											stylus.render data, (err, css) ->
+												if err then buffer "#{err}"
+												else buffer css
 
 class CoffeeFile extends File
 	render: 		(buffer) ->		fs.readFile @filepath, 'utf8', (err, data) ->
-										if err then return
-										buffer coffee.compile data
+										if err then buffer "#{err}"
+										else buffer coffee.compile data
 
 class JadeFile extends HtmlFile
 	render: 		(buffer) ->		jade.renderFile @filepath, (err, html) ->
-										if err then return
-										buffer html 
+										if err then buffer "#{err}"
+										else buffer html 
 		
 exports.File 		= File
 exports.HtmlFile 	= HtmlFile
