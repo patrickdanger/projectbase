@@ -21,7 +21,7 @@ server 	= http.createServer (req, resp) ->
 		if exists
 			console.log "serving file #{file}"
 			file.render (data) -> 
-				resp.writeHead 200
+				resp.writeHead 200, if file.type then 'Content-Type': file.type
 				resp.write data
 				resp.end()
 		else
@@ -39,11 +39,11 @@ class FileFactory
 	file:			(filepath) ->
 		type = path.extname(filepath).substr 1, path.extname(filepath).length
 		switch type
-			when 'html' 	then new HtmlFile path.join(@webroot, filepath), type
-			when 'styl'		then new StylusFile path.join(@srcroot, 'stylus', filepath), type
-			when 'coffee'	then new CoffeeFile path.join(@srcroot, 'coffee', filepath), type
-			when 'jade'		then new JadeFile path.join(@srcroot, 'jade', filepath), type
-			else			new File path.join(@webroot, filepath), null 
+			when 'html' 	then new HtmlFile path.join(@webroot, filepath), 'text/html'
+			when 'styl'		then new StylusFile path.join(@srcroot, 'stylus', filepath), 'text/css'
+			when 'coffee'	then new CoffeeFile path.join(@srcroot, 'coffee', filepath), 'application/x-javascript'
+			when 'jade'		then new JadeFile path.join(@srcroot, 'jade', filepath), 'text/html'
+			else			new File path.join(@webroot, filepath), null
 
 exports.FileFactory = FileFactory
 factory	= new FileFactory
