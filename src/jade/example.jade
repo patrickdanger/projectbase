@@ -1,0 +1,42 @@
+//
+	example.jade
+	
+	included as part of the projectbase repo to show how jade templates
+	can be easily dropped into (or created within) the src/jade directory
+	become immediately available to the included webserver
+
+	if you're running the webserver included in projectbase, simply point
+	your browser at http://localhost:8080/example.jade to see how the 
+	server will compile and serve this jade template.
+
+	if you want to learn more about jade, you're sorta outta luck because
+	the documentation isn't that great and the examples are all in a weird
+	format that require a script initialization to preceed them, but
+	the github readme has a pretty good summary of the capabilities:
+
+		https://github.com/visionmedia/jade/
+
+	this example is ripped off and modified slightly from the one found
+	here:
+
+		http://jade-lang.com/
+
+- var pageTitle = "Jade - node templating engine"
+- var youAreUsingJade = true
+
+!!! 5
+html(lang="en")
+	head
+		title= pageTitle
+		script(type='text/javascript')
+			|	if (foo) {
+			|		bar()
+			|	}
+	body
+
+		h1 Jade - node template engine
+		#container
+			- if (youAreUsingJade)
+				p You are amazing
+			- else
+				p Get on it!
