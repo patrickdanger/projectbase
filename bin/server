@@ -40,6 +40,8 @@ class FileFactory
 		type = path.extname(filepath).substr 1, path.extname(filepath).length
 		switch type
 			when 'html' 	then new HtmlFile path.join(@webroot, filepath), 'text/html'
+			when 'css'		then new CssFile path.join(@webroot, filepath), 'text/css'
+			when 'js'		then new JavaScriptFile path.join(@webroot, filepath), 'application/x-javascript'
 			when 'styl'		then new StylusFile path.join(@srcroot, 'stylus', filepath), 'text/css'
 			when 'coffee'	then new CoffeeFile path.join(@srcroot, 'coffee', filepath), 'application/x-javascript'
 			when 'jade'		then new JadeFile path.join(@srcroot, 'jade', filepath), 'text/html'
@@ -57,6 +59,16 @@ class File
 			else buffer data
 
 class HtmlFile extends File
+	render: 		(buffer) ->		fs.readFile @filepath, 'utf8', (err, data) ->
+										if err then buffer "#{err}"
+										else buffer data
+										
+class CssFile extends File
+	render: 		(buffer) ->		fs.readFile @filepath, 'utf8', (err, data) ->
+										if err then buffer "#{err}"
+										else buffer data
+										
+class JavaScriptFile extends File
 	render: 		(buffer) ->		fs.readFile @filepath, 'utf8', (err, data) ->
 										if err then buffer "#{err}"
 										else buffer data
