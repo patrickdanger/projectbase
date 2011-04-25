@@ -1,13 +1,13 @@
 # projectbase
 
 Standard node.js basic project setup with included webserver that dynamically
-compiled [jade][1], [stylus][2] and [CoffeeScript][3] source files on request.
+compiles [jade][1], [stylus][2] and [CoffeeScript][3] source files on request.
 
 Basically, this whole project was an effort to put together a basic environment
 in which I could go start prototyping immediately and easily debug without
 worrying about setting up the various watch commands to monitor source changes.
 Projectbase, with it's built-in webserver and dynamic source compilation, 
-allows get to the business of doing your business with as little friction as
+allows you get to the business of doing your business with as little friction as
 possible.
 
 [1]: http://jade-lang.com/

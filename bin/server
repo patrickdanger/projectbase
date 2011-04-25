@@ -16,7 +16,7 @@ server 	= http.createServer (req, resp) ->
 	filepath	= path.normalize uri.pathname
 	
 	file		= factory.file filepath
-
+	
 	path.exists file.filepath, (exists) ->		 
 		if exists
 			console.log "serving file #{file}"
@@ -45,6 +45,7 @@ class FileFactory
 			when 'styl'		then new StylusFile path.join(@srcroot, 'stylus', filepath), 'text/css'
 			when 'coffee'	then new CoffeeFile path.join(@srcroot, 'coffee', filepath), 'application/x-javascript'
 			when 'jade'		then new JadeFile path.join(@srcroot, 'jade', filepath), 'text/html'
+			when 'otf'		then new FontFile path.join(@webroot, filepath), 'font/opentype'
 			else			new File path.join(@webroot, filepath), null
 
 exports.FileFactory = FileFactory
@@ -73,7 +74,12 @@ class JavaScriptFile extends File
 										if err then buffer "#{err}"
 										else buffer data
 
-class StylusFile extends File
+class FontFile extends File
+	render:			(buffer) ->		fs.readFile @filepath, (err, data) ->
+										if err then buffer "#{err}"
+										else buffer data
+
+class StylusFile extends CssFile
 	render: 		(buffer) ->		fs.readFile @filepath, 'utf8', (err, data) ->
 										if err then buffer "#{err}"
 										else 
@@ -81,7 +87,7 @@ class StylusFile extends File
 												if err then buffer "#{err}"
 												else buffer css
 
-class CoffeeFile extends File
+class CoffeeFile extends JavaScriptFile
 	render: 		(buffer) ->		fs.readFile @filepath, 'utf8', (err, data) ->
 										if err then buffer "#{err}"
 										else buffer coffee.compile data
