@@ -5,11 +5,13 @@ url		= require 'url'
 fs 		= require 'fs'
 path 	= require 'path'
 
-jade	= require 'jade'
-stylus	= require 'stylus'
-coffee 	= require 'coffee-script'
+conf	= require './.config'
+files	= require '../lib/File.coffee'
 
+
+factory = new files.FileFactory(conf.webroot || "webroot", conf.srcroot || "src")
 server 	= http.createServer (req, resp) ->
+
 
 	uri 		= url.parse req.url, yes
 	query 		= uri.queryString
@@ -29,76 +31,5 @@ server 	= http.createServer (req, resp) ->
 			resp.writeHead 404
 			resp.end "404 File Not Found"
 			
-.listen 8080
-console.log "Server started, listening on port 8080"
-
-class FileFactory
-	constructor:	(webroot = "webroot", srcroot = "src") ->
-		@webroot = webroot
-		@srcroot = srcroot
-	file:			(filepath) ->
-		type = path.extname(filepath).substr 1, path.extname(filepath).length
-		switch type
-			when 'html' 	then new HtmlFile path.join(@webroot, filepath), 'text/html'
-			when 'css'		then new CssFile path.join(@webroot, filepath), 'text/css'
-			when 'js'		then new JavaScriptFile path.join(@webroot, filepath), 'application/x-javascript'
-			when 'styl'		then new StylusFile path.join(@srcroot, 'stylus', filepath), 'text/css'
-			when 'coffee'	then new CoffeeFile path.join(@srcroot, 'coffee', filepath), 'application/x-javascript'
-			when 'jade'		then new JadeFile path.join(@srcroot, 'jade', filepath), 'text/html'
-			when 'otf'		then new FontFile path.join(@webroot, filepath), 'font/opentype'
-			else			new File path.join(@webroot, filepath), null
-
-exports.FileFactory = FileFactory
-factory	= new FileFactory
-
-class File
-	constructor: 	(@filepath, @type) -> @name = path.basename @filepath
-	toString:		() -> "#{@filepath}"
-	render: 		(buffer) ->
-		fs.readFile @filepath, (err, data) ->
-			if err then buffer "#{err}"
-			else buffer data
-
-class HtmlFile extends File
-	render: 		(buffer) ->		fs.readFile @filepath, 'utf8', (err, data) ->
-										if err then buffer "#{err}"
-										else buffer data
-										
-class CssFile extends File
-	render: 		(buffer) ->		fs.readFile @filepath, 'utf8', (err, data) ->
-										if err then buffer "#{err}"
-										else buffer data
-										
-class JavaScriptFile extends File
-	render: 		(buffer) ->		fs.readFile @filepath, 'utf8', (err, data) ->
-										if err then buffer "#{err}"
-										else buffer data
-
-class FontFile extends File
-	render:			(buffer) ->		fs.readFile @filepath, (err, data) ->
-										if err then buffer "#{err}"
-										else buffer data
-
-class StylusFile extends CssFile
-	render: 		(buffer) ->		fs.readFile @filepath, 'utf8', (err, data) ->
-										if err then buffer "#{err}"
-										else 
-											stylus(data).render (err, css) ->
-												if err then buffer "#{err}"
-												else buffer css
-
-class CoffeeFile extends JavaScriptFile
-	render: 		(buffer) ->		fs.readFile @filepath, 'utf8', (err, data) ->
-										if err then buffer "#{err}"
-										else buffer coffee.compile data
-
-class JadeFile extends HtmlFile
-	render: 		(buffer) ->		jade.renderFile @filepath, (err, html) ->
-										if err then buffer "#{err}"
-										else buffer html 
-		
-exports.File 		= File
-exports.HtmlFile 	= HtmlFile
-exports.JadeFile	= JadeFile
-exports.StylusFile	= StylusFile
-exports.CoffeeFile	= CoffeeFile
+.listen conf.port
+console.log "Server started, listening on port #{conf.port}"
