@@ -5,11 +5,11 @@ url		= require 'url'
 fs 		= require 'fs'
 path 	= require 'path'
 
-conf	= require './.config'
+conf	= require '../.config'
 files	= require '../lib/File.coffee'
 
 
-factory = new files.FileFactory(conf.webroot || "webroot", conf.srcroot || "src")
+factory = new files.FileFactory(conf.serverwebroot || "webroot", conf.serversrcroot || "src")
 server 	= http.createServer (req, resp) ->
 
 
@@ -31,5 +31,5 @@ server 	= http.createServer (req, resp) ->
 			resp.writeHead 404
 			resp.end "404 File Not Found"
 			
-.listen conf.port
-console.log "Server started, listening on port #{conf.port}"
+.listen conf.server.port
+console.log "Server started, listening on port #{conf.server.port}"
