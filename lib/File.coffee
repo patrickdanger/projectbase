@@ -87,6 +87,8 @@ exports.CoffeeFile 		= class CoffeeFile extends JavaScriptFile
 										else buffer coffee.compile data
 
 exports.JadeFile 		= class JadeFile extends HtmlFile
-	render: 		(buffer) ->		jade.renderFile @filepath, (err, html) ->
+	render: 		(buffer) ->		fs.readFile @filepath, 'utf8', (err, data) ->
 										if err then buffer "#{err}"
-										else buffer html 
+										else
+											fn = jade.compile data
+											buffer fn {}
