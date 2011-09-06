@@ -78,9 +78,11 @@ exports.StylusFile 		= class StylusFile extends CssFile
 	render: 		(buffer) ->		fs.readFile @filepath, 'utf8', (err, data) ->
 										if err then buffer "#{err}"
 										else 
-											stylus(data).render (err, css) ->
-												if err then buffer "#{err}"
-												else buffer css
+											stylus(data)
+												.set('paths', [__dirname + '/../src/stylus'])
+												.render (err, css) ->
+													if err then buffer "#{err}"
+													else buffer css
 
 exports.CoffeeFile 		= class CoffeeFile extends JavaScriptFile
 	render: 		(buffer) ->		fs.readFile @filepath, 'utf8', (err, data) ->

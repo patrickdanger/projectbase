@@ -62,24 +62,8 @@ The value of param is accessible within the Jade template at:
 Currently, query is the only object passed as local to the Jade
 templates.
 
-#### Caveat
-
-Currently, the include path is not set for files in these directories
-that include other files, ie: stylus @import url's or CoffeeScript 
-require() calls.  These paths must be set relative to the directory
-you are running the server command from, ie: projectbase/.
-
-I'm working on it.
-
-
 ### Todo
 
-*	Add the appropriate directory root to the local environment
-	at compile time, so that relative includes in source files
-	are considered relative to the source file itself, rather than
-	where the server command was executed.
-* 	Build out a configuration file and command-line argument pattern
-	to allow changing ports, setting webroot and srcroot
 *	Pull the server into it's own object
 *	Add dynamic file type to mimetype resolution
 *	Add support for automatic index file resolution, ie: currently
