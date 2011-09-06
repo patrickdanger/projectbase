@@ -1,4 +1,5 @@
 
+url		= require 'url'
 fs 		= require 'fs'
 path 	= require 'path'
 jade	= require 'jade'
@@ -87,8 +88,8 @@ exports.CoffeeFile 		= class CoffeeFile extends JavaScriptFile
 										else buffer coffee.compile data
 
 exports.JadeFile 		= class JadeFile extends HtmlFile
-	render: 		(buffer) ->		fs.readFile @filepath, 'utf8', (err, data) ->
-										if err then buffer "#{err}"
-										else
-											fn = jade.compile data
-											buffer fn {}
+	render: 		(buffer, req) -> 	fs.readFile @filepath, 'utf8', (err, data) ->
+											if err then buffer "#{err}"
+											else
+												fn = jade.compile data
+												buffer fn { query: url.parse(req.url, yes).query }

@@ -23,9 +23,10 @@ server 	= http.createServer (req, resp) ->
 		if exists
 			console.log "serving file #{file}"
 			file.render (data) -> 
-				resp.writeHead 200, if file.type then 'Content-Type': file.type
-				resp.write data
-				resp.end()
+					resp.writeHead 200, if file.type then 'Content-Type': file.type
+					resp.write data
+					resp.end()
+				, req
 		else
 			console.log "#{file} not found"
 			resp.writeHead 404

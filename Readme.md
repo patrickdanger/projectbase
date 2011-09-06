@@ -18,7 +18,7 @@ possible.
 
 Check out projectbase:
 
-	git://github.com/patrickdanger/projectbase.git
+	git clone git://github.com/patrickdanger/projectbase.git
 	
 Change into the projectbase directory:
 
@@ -50,6 +50,18 @@ returns the result of the compilation with the correct mimetype.
 	.styl		src/stylus/		text/css
 	.coffee		src/coffee/		application/x-javascript
 
+Jade files are passed the query object as local, making the query
+string accessible within the template.  For example:
+
+	http://localhost:8080/index.jade?param=value
+	
+The value of param is accessible within the Jade template at:
+
+	query.param
+	
+Currently, query is the only object passed as local to the Jade
+templates.
+
 #### Caveat
 
 Currently, the include path is not set for files in these directories
@@ -62,8 +74,6 @@ I'm working on it.
 
 ### Todo
 
-*	Add the query string to the local environment passed to jade
-	source at compilation.
 *	Add the appropriate directory root to the local environment
 	at compile time, so that relative includes in source files
 	are considered relative to the source file itself, rather than
